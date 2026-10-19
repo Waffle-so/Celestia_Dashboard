@@ -57,7 +57,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>Vue d'ensemble</h1>
-        <span className={styles.badge}>Live Data</span>
+        <div className={styles.liveBadge}>
+          <span className={styles.liveDot} />
+          Live Data
+        </div>
         <span className={styles.subInfo}>Dernière synchronisation : À l'instant</span>
       </div>
 
@@ -83,12 +86,12 @@ export default function DashboardPage() {
               <span>Aucune donnée de transaction disponible</span>
             </div>
           ) : (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.4rem", justifyContent: "flex-end" }}>
               {data.derniers_logs.slice(0, 3).map((log) => (
-                <div key={log.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ color: "#a1a1aa" }}>{log.description}</span>
-                  <span style={{ color: log.type === "credit" ? "#34d399" : "#f87171", fontWeight: 500, backgroundColor: log.type === "credit" ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", padding: "0.15rem 0.5rem", borderRadius: "4px" }}>
-                    {log.type === "credit" ? "+" : "-"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
+                <div key={log.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8125rem", padding: "0.4rem 0.6rem", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                  <span style={{ color: "#a1a1aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginRight: "0.5rem" }}>{log.description}</span>
+                  <span style={{ color: log.type === "credit" ? "#34d399" : "#f87171", fontWeight: 600, fontSize: "0.78rem", backgroundColor: log.type === "credit" ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)", padding: "0.15rem 0.45rem", borderRadius: "5px", flexShrink: 0 }}>
+                    {log.type === "credit" ? "+" : "−"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
                   </span>
                 </div>
               ))}
@@ -110,18 +113,18 @@ export default function DashboardPage() {
             </select>
           </div>
 
-          <div style={{ flex: 1, display: "flex", gap: "1rem", alignItems: "center", justifyContent: "space-around", background: "rgba(0,0,0,0.2)", borderRadius: "12px", padding: "1rem", border: "1px dashed rgba(255,255,255,0.05)" }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "1.75rem", fontWeight: 600, color: "#e4e4e7" }}>{loading ? "..." : (data.commandes_clients?.en_cours ?? 0)}</div>
-              <div style={{ fontSize: "0.8rem", color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: "0.25rem" }}>En cours</div>
+          <div className={styles.ordersGrid}>
+            <div className={styles.orderPill}>
+              <div className={styles.orderPillValue} style={{ color: "#e4e4e7" }}>{loading ? "..." : (data.commandes_clients?.en_cours ?? 0)}</div>
+              <div className={styles.orderPillLabel}>En cours</div>
             </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "1.75rem", fontWeight: 600, color: "#fbbf24" }}>{loading ? "..." : (data.commandes_clients?.pret ?? 0)}</div>
-              <div style={{ fontSize: "0.8rem", color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: "0.25rem" }}>Prêtes</div>
+            <div className={styles.orderPill} style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className={styles.orderPillValue} style={{ color: "#fbbf24" }}>{loading ? "..." : (data.commandes_clients?.pret ?? 0)}</div>
+              <div className={styles.orderPillLabel}>Prêtes</div>
             </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "1.75rem", fontWeight: 600, color: "#34d399" }}>{loading ? "..." : (data.commandes_clients?.livrees ?? 0)}</div>
-              <div style={{ fontSize: "0.8rem", color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: "0.25rem" }}>Livrées</div>
+            <div className={styles.orderPill}>
+              <div className={styles.orderPillValue} style={{ color: "#34d399" }}>{loading ? "..." : (data.commandes_clients?.livrees ?? 0)}</div>
+              <div className={styles.orderPillLabel}>Livrées</div>
             </div>
           </div>
         </div>
@@ -214,6 +217,7 @@ export default function DashboardPage() {
                 padding: "0.75rem",
                 zIndex: 100,
                 minWidth: "200px",
+                maxWidth: "calc(100vw - 2rem)",
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
               }}
             >
@@ -398,7 +402,7 @@ export default function DashboardPage() {
               position: "absolute",
               bottom: "calc(100% + 8px)",
               right: 0,
-              width: "300px",
+              width: "min(320px, calc(100vw - 2rem))",
               backgroundColor: "#0f0f10",
               border: "1px solid rgba(99,102,241,0.3)",
               borderRadius: "10px",
@@ -449,7 +453,7 @@ export default function DashboardPage() {
             <TrendingUp className={styles.chartIcon} />
             <h2 className={styles.chartTitle}>Évolution des Bénéfices</h2>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div className={styles.chartPeriodsWrapper}>
             {[
               { value: "30", label: "30 jours" },
               { value: "90", label: "3 mois" },
@@ -461,17 +465,7 @@ export default function DashboardPage() {
               <button
                 key={period.value}
                 onClick={() => setSelectedPeriod(period.value as any)}
-                style={{
-                  padding: "0.4rem 0.8rem",
-                  borderRadius: "6px",
-                  border: "1px solid",
-                  borderColor: selectedPeriod === period.value ? "#10b981" : "#27272a",
-                  backgroundColor: selectedPeriod === period.value ? "rgba(16, 185, 129, 0.1)" : "transparent",
-                  color: selectedPeriod === period.value ? "#10b981" : "#71717a",
-                  fontSize: "0.8rem",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease"
-                }}
+                className={`${styles.chartPeriodBtn} ${selectedPeriod === period.value ? styles.chartPeriodBtnActive : ""}`}
               >
                 {period.label}
               </button>
@@ -535,7 +529,7 @@ export default function DashboardPage() {
       {/* Bottom Section (Recent Activities) */}
       <div className={styles.bottomSection}>
         <div className={styles.tabsContainer}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <div className={styles.tabsHeaderWrapper}>
             <h2 className={styles.sectionTitle}>Flux d'Activités</h2>
             <div className={styles.tabs}>
               <div
@@ -585,25 +579,25 @@ export default function DashboardPage() {
               {activeTab === "transactions" ? (
                 !data.derniers_logs || data.derniers_logs.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className={styles.tableCell} style={{ textAlign: "center", padding: "3rem" }}>
+                    <td colSpan={4} className={styles.tableCell} style={{ textAlign: "center", padding: "3rem", color: "#71717a" }}>
                       Aucun mouvement récent enregistré.
                     </td>
                   </tr>
                 ) : (
                   data.derniers_logs.map((log) => (
                     <tr key={log.id} className={styles.tableRow}>
-                      <td className={styles.tableCell} style={{ fontWeight: 500, color: "#fff" }}>{log.description}</td>
-                      <td className={styles.tableCell}>
+                      <td className={styles.tableCell} data-label="Description" style={{ fontWeight: 500, color: "#fff" }}>{log.description}</td>
+                      <td className={styles.tableCell} data-label="Type">
                         <span className={styles.badgeStatus} style={{
-                          backgroundColor: log.type === "credit" ? "rgba(52, 211, 153, 0.1)" : "rgba(248, 113, 113, 0.1)",
+                          backgroundColor: log.type === "credit" ? "rgba(52, 211, 153, 0.12)" : "rgba(248, 113, 113, 0.12)",
                           color: log.type === "credit" ? "#34d399" : "#f87171"
                         }}>
                           {log.type === "credit" ? "Revenu" : "Dépense"}
                         </span>
                       </td>
-                      <td className={styles.tableCell} style={{ color: "#a1a1aa" }}>{new Date(log.createdAt).toLocaleDateString("fr-DZ", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                      <td className={styles.tableCell} style={{ textAlign: "right", fontWeight: 600, color: log.type === "credit" ? "#34d399" : "#f87171" }}>
-                        {log.type === "credit" ? "+" : "-"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
+                      <td className={styles.tableCell} data-label="Date" style={{ color: "#a1a1aa" }}>{new Date(log.createdAt).toLocaleDateString("fr-DZ", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                      <td className={styles.tableCell} data-label="Montant" style={{ textAlign: "right", fontWeight: 700, color: log.type === "credit" ? "#34d399" : "#f87171" }}>
+                        {log.type === "credit" ? "+" : "−"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
                       </td>
                     </tr>
                   ))
@@ -611,25 +605,24 @@ export default function DashboardPage() {
               ) : (
                 !data.dernieres_commandes_clients || data.dernieres_commandes_clients.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className={styles.tableCell} style={{ textAlign: "center", padding: "3rem" }}>
+                    <td colSpan={4} className={styles.tableCell} style={{ textAlign: "center", padding: "3rem", color: "#71717a" }}>
                       Aucune commande client récente.
                     </td>
                   </tr>
                 ) : (
                   data.dernieres_commandes_clients.map((cmd) => (
                     <tr key={cmd.id} className={styles.tableRow}>
-                      <td className={styles.tableCell} style={{ fontWeight: 500, color: "#fff" }}>{cmd.Client?.nom || "Client Anonyme"}</td>
-                      <td className={styles.tableCell} style={{ color: "#a1a1aa" }}>{cmd.description}</td>
-                      <td className={styles.tableCell}>
+                      <td className={styles.tableCell} data-label="Client" style={{ fontWeight: 500, color: "#fff" }}>{cmd.Client?.nom || "Client Anonyme"}</td>
+                      <td className={styles.tableCell} data-label="Description" style={{ color: "#a1a1aa" }}>{cmd.description}</td>
+                      <td className={styles.tableCell} data-label="Statut">
                         <span className={styles.badgeStatus} style={{
                           backgroundColor: cmd.statut === "en_cours" ? "rgba(245, 158, 11, 0.15)" : cmd.statut === "pret" ? "rgba(59, 130, 246, 0.15)" : "rgba(52, 211, 153, 0.15)",
                           color: cmd.statut === "en_cours" ? "#fbbf24" : cmd.statut === "pret" ? "#60a5fa" : "#34d399",
-                          border: "none"
                         }}>
                           {cmd.statut.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className={styles.tableCell} style={{ textAlign: "right", fontWeight: 600, color: "#e4e4e7" }}>
+                      <td className={styles.tableCell} data-label="Total" style={{ textAlign: "right", fontWeight: 700, color: "#e4e4e7" }}>
                         {parseFloat(cmd.prix_total.toString()).toLocaleString("fr-DZ")} DA
                       </td>
                     </tr>
@@ -641,16 +634,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Footer Navigation controls */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
-          <div style={{ fontSize: "0.8rem", color: "#71717a", fontWeight: 500 }}>
+        <div className={styles.paginationFooter}>
+          <div className={styles.paginationCount}>
             Affichage de {activeTab === "transactions" ? data.derniers_logs?.length ?? 0 : data.dernieres_commandes_clients?.length ?? 0} éléments
           </div>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <button style={{ background: "rgba(24, 24, 27, 0.8)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "8px", padding: "0.5rem", cursor: "pointer", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.background = "rgba(39, 39, 42, 1)"} onMouseOut={e => e.currentTarget.style.background = "rgba(24, 24, 27, 0.8)"}>
-              <ChevronLeft className="h-4 w-4 text-zinc-400" />
+          <div className={styles.paginationBtnGroup}>
+            <button className={styles.paginationBtn} aria-label="Page précédente">
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            <button style={{ background: "rgba(24, 24, 27, 0.8)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "8px", padding: "0.5rem", cursor: "pointer", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.background = "rgba(39, 39, 42, 1)"} onMouseOut={e => e.currentTarget.style.background = "rgba(24, 24, 27, 0.8)"}>
-              <ChevronRight className="h-4 w-4 text-zinc-400" />
+            <button className={styles.paginationBtn} aria-label="Page suivante">
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

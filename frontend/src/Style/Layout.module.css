@@ -1,7 +1,7 @@
 .layoutContainer {
   display: flex;
   min-height: 100vh;
-  background-color: #09090b; /* Dark theme background */
+  background-color: #09090b;
   overflow: hidden;
 }
 
@@ -36,6 +36,27 @@
   justify-content: center;
   transition: color 0.2s;
 }
+
 .triggerButton:hover {
   color: #ffffff;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ADAPTATION MOBILE (< 768px)
+   ═════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .layoutContainer {
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .mainContent {
+    height: auto;
+    min-height: calc(100dvh - 3.5rem);
+    overflow-y: visible;
+    width: 100%;
+  }
 }

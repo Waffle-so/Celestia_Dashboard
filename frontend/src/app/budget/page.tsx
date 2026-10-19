@@ -104,12 +104,11 @@ export default function BudgetPage() {
   const filteredLogs = filterLogs(logs, searchQuery, categoryFilter, dateFrom, dateTo)
   const categories = Array.from(new Set(logs.map((l) => l.categorie)))
 
-
   return (
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.title}>Portefeuille & Budget</h1>
+        <h1 className={styles.title}>Portefeuille &amp; Budget</h1>
       </div>
 
       {/* Main Grid: Balance Box & Statistics */}
@@ -119,36 +118,36 @@ export default function BudgetPage() {
           <div>
             <span className={styles.balanceLabel}>Solde Actuel</span>
             <div className={styles.balanceValue}>
-              {loading ? "_" : `${solde.toLocaleString("fr-DZ")} DA`}
+              {loading ? "—" : `${solde.toLocaleString("fr-DZ")} DA`}
             </div>
           </div>
           <div className={styles.actionsGroup}>
-            <Button 
+            <button
               onClick={() => handleOpenModal("credit")}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg flex items-center gap-2 border-none"
+              className={`${styles.actionBtn} ${styles.actionBtnCredit}`}
             >
-              <ArrowUpRight className="h-4 w-4" /> Ajouter de l&apos;argent
-            </Button>
-            <Button 
+              <ArrowUpRight size={16} /> Ajouter
+            </button>
+            <button
               onClick={() => handleOpenModal("debit")}
-              className="bg-rose-600 hover:bg-rose-700 text-white font-medium px-6 py-2.5 rounded-lg flex items-center gap-2 border-none"
+              className={`${styles.actionBtn} ${styles.actionBtnDebit}`}
             >
-              <ArrowDownRight className="h-4 w-4" /> Retirer de l&apos;argent
-            </Button>
+              <ArrowDownRight size={16} /> Retirer
+            </button>
           </div>
         </div>
 
-        {/* Small stats summary card */}
+        {/* Stats summary card */}
         <div className={styles.statsCard}>
           <div className={styles.statRow}>
             <span className={styles.statLabel}>Entrées Totales</span>
-            <span className={styles.statValue} style={{ color: "#10b981", fontWeight: 600 }}>
+            <span className={styles.statValue} style={{ color: "#10b981" }}>
               +{totalRevenus.toLocaleString("fr-DZ")} DA
             </span>
           </div>
           <div className={styles.statRow}>
             <span className={styles.statLabel}>Sorties Totales</span>
-            <span className={styles.statValue} style={{ color: "#ef4444", fontWeight: 600 }}>
+            <span className={styles.statValue} style={{ color: "#f43f5e" }}>
               -{totalDepenses.toLocaleString("fr-DZ")} DA
             </span>
           </div>
@@ -164,147 +163,115 @@ export default function BudgetPage() {
         <h2 className={styles.tableTitle}>Mouvements de Caisse récents</h2>
 
         {/* Filters */}
-        <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: "250px" }}>
-            <Search style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", width: "1rem", height: "1rem", color: "#71717a" }} />
+        <div className={styles.filtersBar}>
+          <div className={styles.searchWrapper}>
+            <Search className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Rechercher par description ou catégorie..."
+              placeholder="Rechercher description, catégorie…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem 0.875rem 0.5rem 2.5rem",
-                borderRadius: "8px",
-                border: "1px solid #27272a",
-                backgroundColor: "#18181b",
-                color: "#e4e4e7",
-                fontSize: "0.875rem",
-              }}
+              className={styles.filterInput}
             />
           </div>
+
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{
-              padding: "0.5rem 0.875rem",
-              borderRadius: "8px",
-              border: "1px solid #27272a",
-              backgroundColor: "#18181b",
-              color: "#e4e4e7",
-              fontSize: "0.875rem",
-              cursor: "pointer",
-            }}
+            className={styles.filterSelect}
           >
             <option value="all">Toutes les catégories</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat.replace('_', ' ')}</option>
+              <option key={cat} value={cat}>{cat.replace("_", " ")}</option>
             ))}
           </select>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Calendar style={{ width: "1rem", height: "1rem", color: "#71717a" }} />
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  borderRadius: "8px",
-                  border: "1px solid #27272a",
-                  backgroundColor: "#18181b",
-                  color: "#e4e4e7",
-                  fontSize: "0.875rem",
-                }}
-              />
-            </div>
-            <span style={{ color: "#71717a" }}>à</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Calendar style={{ width: "1rem", height: "1rem", color: "#71717a" }} />
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  borderRadius: "8px",
-                  border: "1px solid #27272a",
-                  backgroundColor: "#18181b",
-                  color: "#e4e4e7",
-                  fontSize: "0.875rem",
-                }}
-              />
-            </div>
+
+          <div className={styles.dateRange}>
+            <Calendar size={14} style={{ color: "#52525b", flexShrink: 0 }} />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className={styles.dateInput}
+            />
+            <span className={styles.dateSep}>→</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className={styles.dateInput}
+            />
           </div>
-          <Button
-            variant="ghost"
+
+          <button
+            className={styles.resetBtn}
             onClick={() => {
               setSearchQuery("")
               setCategoryFilter("all")
               setDateFrom("")
               setDateTo("")
             }}
-            style={{ fontSize: "0.875rem" }}
           >
             Réinitialiser
-          </Button>
+          </button>
         </div>
 
-        <div className={styles.tableContainer}>
+        {/* Table */}
+        <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead className={styles.tableHeader}>
               <tr>
                 <th className={styles.tableHeaderCell}>Date</th>
                 <th className={styles.tableHeaderCell}>Description</th>
                 <th className={styles.tableHeaderCell}>Catégorie</th>
-                <th className={styles.tableHeaderCell}>Solde Avant</th>
-                <th className={styles.tableHeaderCell}>Solde Après</th>
+                <th className={styles.tableHeaderCell}>Avant</th>
+                <th className={styles.tableHeaderCell}>Après</th>
                 <th className={styles.tableHeaderCell} style={{ textAlign: "right" }}>Montant</th>
-                <th className={styles.tableHeaderCell} style={{ width: "60px" }}></th>
+                <th className={styles.tableHeaderCell} style={{ width: "52px" }}></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className={styles.tableCell} style={{ textAlign: "center" }}>
-                    Chargement...
+                  <td colSpan={7} className={styles.tableCell} style={{ textAlign: "center", color: "#52525b" }}>
+                    Chargement…
                   </td>
                 </tr>
               ) : filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className={styles.tableCell} style={{ textAlign: "center" }}>
-                    {logs.length === 0 ? "Aucune transaction enregistrée." : "Aucun résultat correspondant aux filtres."}
+                  <td colSpan={7} className={styles.tableCell} style={{ textAlign: "center", color: "#52525b" }}>
+                    {logs.length === 0 ? "Aucune transaction enregistrée." : "Aucun résultat pour ces filtres."}
                   </td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
                   <tr key={log.id} className={styles.tableRow}>
-                    <td className={styles.tableCell}>
+                    <td className={styles.tableCell} data-label="Date">
                       {new Date(log.createdAt).toLocaleDateString("fr-DZ")}
                     </td>
-                    <td className={styles.tableCell} style={{ fontWeight: 500 }}>
+                    <td className={styles.tableCell} data-label="Description" style={{ fontWeight: 500 }}>
                       {log.description}
                     </td>
-                    <td className={styles.tableCell}>
+                    <td className={styles.tableCell} data-label="Catégorie">
                       <span className={`${styles.badge} ${log.type === "credit" ? styles.creditBadge : styles.debitBadge}`}>
-                        {log.categorie.replace('_', ' ')}
+                        {log.categorie.replace("_", " ")}
                       </span>
                     </td>
-                    <td className={styles.tableCell} style={{ color: "#71717a" }}>
+                    <td className={styles.tableCell} data-label="Avant" style={{ color: "#71717a" }}>
                       {parseFloat(log.solde_avant.toString()).toLocaleString("fr-DZ")} DA
                     </td>
-                    <td className={styles.tableCell} style={{ color: "#71717a" }}>
+                    <td className={styles.tableCell} data-label="Après" style={{ color: "#71717a" }}>
                       {parseFloat(log.solde_apres.toString()).toLocaleString("fr-DZ")} DA
                     </td>
-                    <td className={styles.tableCell} style={{ textAlign: "right", fontWeight: 600, color: log.type === "credit" ? "#10b981" : "#ef4444" }}>
-                      {log.type === "credit" ? "+" : "-"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
+                    <td className={styles.tableCell} data-label="Montant" style={{ textAlign: "right", fontWeight: 700, color: log.type === "credit" ? "#10b981" : "#f43f5e" }}>
+                      {log.type === "credit" ? "+" : "−"}{parseFloat(log.montant.toString()).toLocaleString("fr-DZ")} DA
                     </td>
                     <td className={styles.tableCell}>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleDeleteLog(log.id)}
-                        style={{ color: "#71717a" }}
+                        style={{ color: "#52525b" }}
                       >
                         <Trash2 className="h-4 w-4 hover:text-red-500 transition-colors" />
                       </Button>

@@ -1,6 +1,6 @@
 .sidebar {
   width: 260px;
-  background-color: #000000; /* completely black like Image 2 */
+  background-color: #000000;
   border-right: 1px solid #1f1f23;
   display: flex;
   flex-direction: column;
@@ -8,9 +8,66 @@
   color: #ededed;
   font-family: inherit;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
-/* Header section with user dropdown */
+/* ── Top Bar Mobile (Cachée sur grand écran) ── */
+.mobileTopBar {
+  display: none;
+}
+
+.hamburgerButton {
+  background: transparent;
+  border: none;
+  color: #ededed;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+}
+
+.hamburgerButton:active {
+  background-color: #18181b;
+}
+
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.mobileBrandName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.mobileThemeToggle {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Backdrop Overlay Mobile ── */
+.backdrop {
+  display: none;
+}
+
+/* ── Bouton Fermer (X) sur Mobile ── */
+.closeButton {
+  display: none;
+}
+
+.desktopOnlyChevron {
+  display: block;
+}
+
+/* ── Header section with user info ── */
 .header {
   padding: 1.25rem 1rem;
   border-bottom: 1px solid #1f1f23;
@@ -20,6 +77,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
 }
+
 .header:hover {
   background-color: #0a0a0a;
 }
@@ -28,13 +86,14 @@
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 9999px;
-  background-color: #6b21a8; /* purple avatar like Image 2 */
+  background-color: #6b21a8;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 0.75rem;
   color: white;
+  flex-shrink: 0;
 }
 
 .headerInfo {
@@ -52,7 +111,7 @@
   text-overflow: ellipsis;
 }
 
-/* Content navigation section */
+/* ── Content navigation section ── */
 .content {
   flex-grow: 1;
   padding: 1rem 0.75rem;
@@ -81,32 +140,34 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #a1a1aa; /* unselected text color */
+  color: #a1a1aa;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
+
 .menuItem:hover {
   background-color: #0c0c0e;
   color: #ffffff;
 }
 
 .menuItemActive {
-  background-color: #18181b; /* active background like Image 2 */
+  background-color: #18181b;
   color: #ffffff;
 }
 
 .icon {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.15rem;
+  height: 1.15rem;
   color: currentColor;
+  flex-shrink: 0;
 }
 
-/* Footer section */
+/* ── Footer section ── */
 .footer {
   padding: 1rem;
   border-top: 1px solid #1f1f23;
@@ -123,21 +184,94 @@
   color: #a1a1aa;
 }
 
-.progressWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN MOBILE (< 768px)
+   ═════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Barre du haut mobile visible */
+  .mobileTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3.5rem;
+    padding: 0 1rem;
+    background-color: #000000;
+    border-bottom: 1px solid #1f1f23;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+  }
+
+  /* Backdrop d'assombrissement */
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 998;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Sidebar transformée en tiroir coulissant */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 82vw;
+    height: 100dvh;
+    z-index: 999;
+    border-right: 1px solid #27272a;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  /* Masquer le chevron sur mobile et afficher le bouton X */
+  .desktopOnlyChevron {
+    display: none;
+  }
+
+  .closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #a1a1aa;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 6px;
+    transition: color 0.15s, background-color 0.15s;
+  }
+
+  .closeButton:hover,
+  .closeButton:active {
+    color: #ffffff;
+    background-color: #18181b;
+  }
+
+  /* Liens de menu plus confortables au doigt */
+  .menuItem {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.925rem;
+  }
 }
 
-.progressBarContainer {
-  height: 6px;
-  background-color: #27272a;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.progressBar {
-  height: 100%;
-  background-color: #ffffff;
-  border-radius: 9999px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
