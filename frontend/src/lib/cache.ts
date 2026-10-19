@@ -12,7 +12,7 @@
 type CacheEntry<T> = { data: T; ts: number }
 
 const store = new Map<string, CacheEntry<unknown>>()
-const TTL_MS = 10 * 60 * 1000 // 10 min — filet de sécurité
+const TTL_MS = 100 * 60 * 1000 // 10 min — filet de sécurité
 
 export function getCache<T>(key: string): T | null {
   const entry = store.get(key) as CacheEntry<T> | undefined
