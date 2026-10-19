@@ -1,0 +1,66 @@
+[
+  {
+    "categorie": "Pierre ordinaire",
+    "description": "Pierres sans nom, désignées par leur couleur",
+    "pierres": [
+      { "id": "p_blanche",    "label": "Pierre blanche" },
+      { "id": "p_noire",     "label": "Pierre noire" },
+      { "id": "p_rouge",     "label": "Pierre rouge" },
+      { "id": "p_rose",      "label": "Pierre rose" },
+      { "id": "p_jaune",     "label": "Pierre jaune" },
+      { "id": "p_orange",    "label": "Pierre orange" },
+      { "id": "p_verte",     "label": "Pierre verte" },
+      { "id": "p_bleue",     "label": "Pierre bleue" },
+      { "id": "p_violette",  "label": "Pierre violette" },
+      { "id": "p_bordeaux",  "label": "Pierre bordeaux" },
+      { "id": "p_marron",    "label": "Pierre marron" },
+      { "id": "p_grise",     "label": "Pierre grise" },
+      { "id": "p_transparente", "label": "Pierre transparente" },
+      { "id": "p_irisee",    "label": "Pierre irisée" },
+      { "id": "p_doree",     "label": "Pierre dorée" }
+    ]
+  },
+  {
+    "categorie": "Moissanite & Diamant",
+    "description": "Pierres de haute brillance, naturelles ou synthétiques",
+    "pierres": [
+      { "id": "diamant",              "label": "Diamant" },
+      { "id": "diamant_noir",         "label": "Diamant noir" },
+      { "id": "diamant_rose",         "label": "Diamant rose" },
+      { "id": "diamant_jaune",        "label": "Diamant jaune" },
+      { "id": "diamant_bleu",         "label": "Diamant bleu" },
+      { "id": "moissanite",           "label": "Moissanite" },
+      { "id": "moissanite_coloree",   "label": "Moissanite colorée" },
+      { "id": "zircone_cubique",      "label": "Zircone cubique (CZ)" }
+    ]
+  },
+  {
+    "categorie": "Pierres fines & semi-précieuses",
+    "description": "Gemmes naturelles identifiées par leur minéral",
+    "pierres": [
+      { "id": "amethyste",    "label": "Améthyste",    "couleur": "violet" },
+      { "id": "citrine",      "label": "Citrine",      "couleur": "jaune doré" },
+      { "id": "topaze",       "label": "Topaze",       "couleur": "bleu / or" },
+      { "id": "oeil_de_tigre","label": "Œil de tigre", "couleur": "marron doré" },
+      { "id": "onyx",         "label": "Onyx",         "couleur": "noir" },
+      { "id": "lapis_lazuli", "label": "Lapis-lazuli", "couleur": "bleu nuit" },
+      { "id": "turquoise",    "label": "Turquoise",    "couleur": "bleu-vert" },
+      { "id": "quartz_rose",  "label": "Quartz rose",  "couleur": "rose pâle" },
+      { "id": "quartz_blanc", "label": "Quartz blanc (cristal)", "couleur": "blanc" },
+      { "id": "quartz_fume",  "label": "Quartz fumé",  "couleur": "gris brun" },
+      { "id": "agate",        "label": "Agate",        "couleur": "multicolore" },
+      { "id": "cornaline",    "label": "Cornaline",    "couleur": "orange-rouge" },
+      { "id": "labradorite",  "label": "Labradorite",  "couleur": "irisé vert-bleu" },
+      { "id": "malachite",    "label": "Malachite",    "couleur": "vert" },
+      { "id": "nacre",        "label": "Nacre",        "couleur": "blanc irisé" },
+      { "id": "jade",         "label": "Jade",         "couleur": "vert" },
+      { "id": "grenat",       "label": "Grenat",       "couleur": "rouge bordeaux" },
+      { "id": "aigue_marine", "label": "Aigue-marine", "couleur": "bleu clair" },
+      { "id": "tourmaline_rose",    "label": "Tourmaline rose",    "couleur": "rose vif" },
+      { "id": "tourmaline_verte",    "label": "Tourmaline verte",    "couleur": "vert émeraude" },
+      { "id": "tourmaline_noire",   "label": "Tourmaline noire",   "couleur": "noir" },
+      { "id": "peridot",             "label": "Péridot",            "couleur": "vert olive" },
+      { "id": "saphir",              "label": "Saphir",              "couleur": "bleu royal" }
+    ]
+  }
+]

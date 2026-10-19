@@ -1,0 +1,606 @@
+/* ─────────── CONTAINER ─────────── */
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2.5rem;
+  gap: 1.5rem;
+  background-color: var(--background);
+  min-height: 100vh;
+  color: var(--foreground);
+}
+
+/* ─────────── HEADER ─────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ─────────── STATS ROW ─────────── */
+.statsRow {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  flex: 1;
+  min-width: 140px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ─────────── TOOLBAR ─────────── */
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 1rem 0 2.5rem;
+  border-radius: 8px;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.searchInput::placeholder { color: var(--muted-foreground); }
+.searchInput:focus { border-color: var(--ring); }
+
+.filterSelect {
+  height: 40px;
+  padding: 0 0.875rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ─────────── GRID ─────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ─────────── CARD ─────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: box-shadow 0.18s, border-color 0.18s;
+}
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  border-color: var(--ring);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clientAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.clientInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.clientName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clientPhone {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.cardNotes {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  background-color: var(--muted);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-style: italic;
+}
+
+.cardDates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.financeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  padding: 0.6rem 0;
+  margin: 0.25rem 0;
+}
+
+.financeCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.financeLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.financeVal {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─────────── BADGES ─────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badgePending {
+  background: rgba(245,158,11,0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.2);
+}
+
+.badgeReady {
+  background: rgba(59,130,246,0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59,130,246,0.2);
+}
+
+.badgeDelivered {
+  background: rgba(16,185,129,0.1);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.2);
+}
+
+.badgeCancelled {
+  background: rgba(239,68,68,0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+/* ─────────── EMPTY STATE ─────────── */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+/* ─────────── FORM STYLES ─────────── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3f3f46;
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  height: 42px;
+  padding: 0 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #d4d4d8;
+  background: white;
+  font-size: 0.875rem;
+  color: #18181b;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formTextarea {
+  height: auto;
+  min-height: 80px;
+  padding: 0.75rem 0.875rem;
+  resize: vertical;
+}
+
+.formInput:hover,
+.formSelect:hover,
+.formTextarea:hover {
+  border-color: #a1a1aa;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.1);
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder {
+  color: #a1a1aa;
+}
+
+.formSectionTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #52525b;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e4e4e7;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.catalogPicker {
+  position: relative;
+}
+
+.catalogControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 190px);
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.catalogDropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  box-shadow: 0 14px 32px rgba(24, 24, 27, 0.16);
+}
+
+.catalogEmpty {
+  padding: 0.8rem 1rem;
+  color: #71717a;
+  font-size: 0.82rem;
+}
+
+.catalogOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.875rem;
+  background: white;
+  border-bottom: 1px solid #f4f4f5;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.catalogOption:last-child {
+  border-bottom: 0;
+}
+
+.catalogOption:hover {
+  background: #f4f4f5;
+}
+
+.catalogOptionSelected {
+  background: #f0fdf4;
+}
+
+.catalogOptionSelected:hover {
+  background: #dcfce7;
+}
+
+.catalogOptionDisabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.catalogOptionDisabled:hover {
+  background: white;
+}
+
+.catalogOptionText {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.catalogOptionName {
+  color: #18181b;
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalogOptionMeta {
+  color: #71717a;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.catalogPill {
+  flex-shrink: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: #f4f4f5;
+  color: #52525b;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.catalogPillSuccess {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.catalogPillDanger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.catalogCart {
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  background: white;
+}
+
+.catalogCartItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.875rem;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.catalogCartItem:last-of-type {
+  border-bottom: 0;
+}
+
+.catalogCartInfo {
+  min-width: 0;
+}
+
+.catalogCartName {
+  color: #18181b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalogCartMeta {
+  color: #71717a;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.qtyStepper {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.qtyButton {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  background: white;
+  color: #52525b;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.qtyButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.qtyValue {
+  min-width: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.catalogRemoveButton {
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.catalogRemoveButton:hover {
+  background: #fee2e2;
+}
+
+.catalogCartTotal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.55rem 0.875rem;
+  border-top: 1px solid #e4e4e7;
+  background: #f9fafb;
+  color: #18181b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header,
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchWrapper {
+    max-width: none;
+  }
+
+  .formRow,
+  .catalogControls {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogDropdown {
+    max-height: 220px;
+  }
+
+  .catalogOption {
+    align-items: flex-start;
+  }
+
+  .catalogCartItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+  }
+
+  .catalogRemoveButton {
+    grid-column: 2;
+  }
+
+  .catalogCartMeta {
+    white-space: normal;
+  }
+}

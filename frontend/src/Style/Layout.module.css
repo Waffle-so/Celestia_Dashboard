@@ -1,0 +1,41 @@
+.layoutContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: #09090b; /* Dark theme background */
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #09090b;
+}
+
+.topBar {
+  display: flex;
+  height: 3.5rem;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #1f1f23;
+  padding: 0 1.5rem;
+  background-color: #09090b;
+}
+
+.triggerButton {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+.triggerButton:hover {
+  color: #ffffff;
+}
