@@ -25,9 +25,11 @@ import {
   markCommandeReceived,
   deleteCommande,
 } from "./actions"
+import { fetchCollections } from "../articles/actions"
 
 export default function CommandesFournisseursPage() {
   const [commandes, setCommandes] = React.useState<Commande[]>([])
+  const [collections, setCollections] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<"all" | "en_attente" | "arrivee">("all")
@@ -89,6 +91,7 @@ export default function CommandesFournisseursPage() {
   React.useEffect(() => {
     loadCommandes()
     loadArticles()
+    fetchCollections().then(setCollections).catch(() => {})
   }, [])
 
   const openCreate = () => {
@@ -447,6 +450,7 @@ export default function CommandesFournisseursPage() {
         setSelectedStoneIdx={setSelectedStoneIdx}
         stoneCarat={stoneCarat}
         setStoneCarat={setStoneCarat}
+        collections={collections}
       />
     </div>
   )

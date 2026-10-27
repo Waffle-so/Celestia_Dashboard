@@ -58,6 +58,7 @@ export type LigneFormState = {
   nom: string
   description: string
   categorie: CommandeLigne["categorie"]
+  collection_id?: string | number
   matiere: CommandeLigne["matiere"]
   matiere_detail: string
   mchelel: CommandeLigne["mchelel"]
@@ -88,6 +89,7 @@ export const emptyLigneForm = (): LigneFormState => ({
   nom: "",
   description: "",
   categorie: "autre",
+  collection_id: "",
   matiere: "argent",
   matiere_detail: "",
   mchelel: "aucun",
@@ -213,6 +215,7 @@ export const addLigneCommande = async (
       nom: form.nom,
       description: form.description || null,
       categorie: form.categorie,
+      collection_id: form.collection_id ? parseInt(form.collection_id.toString()) : null,
       matiere: form.matiere,
       matiere_detail: form.matiere_detail || null,
       mchelel: form.mchelel,

@@ -236,6 +236,7 @@ const marquerCommandeArrivee = async (req, res) => {
           nom: ligne.nom,
           description: ligne.description,
           categorie: ligne.categorie,
+          collection_id: ligne.collection_id || null,
           matiere: ligne.matiere,
           matiere_detail: ligne.matiere_detail,
           mchelel: ligne.mchelel,

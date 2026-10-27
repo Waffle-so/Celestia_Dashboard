@@ -6,13 +6,21 @@ module.exports = (sequelize, DataTypes) =>
     // ── Infos générales ───────────────────────────────────────────────────
     nom:         { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT,   allowNull: true  },
-    image:       { type: DataTypes.STRING, allowNull: true  }, // chemin ou URL de l'image
+    // ── Images (stockées dans Supabase Storage) ───────────────────────────
+    // Tableau JSON d'URLs publiques — max 5 images
+    // ex: ["https://xxx.supabase.co/storage/v1/object/public/articles/img1.jpg", ...]
+    images: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
 
-    // ── Catégorie ─────────────────────────────────────────────────────────
+    // ── Catégorie & Collection ───────────────────────────────────────────
     categorie: {
       type: DataTypes.ENUM("bague", "collier", "bracelet", "boucles_oreilles", "pendentif", "chevillere", "autre"),
       defaultValue: "autre",
     },
+    collection_id: { type: DataTypes.INTEGER, allowNull: true }, // Clé étrangère vers Collection
 
     // ── Matière principale ────────────────────────────────────────────────
     matiere: {
@@ -46,10 +54,16 @@ module.exports = (sequelize, DataTypes) =>
     // ── Dimensions & poids ────────────────────────────────────────────────
     poids: { type: DataTypes.DECIMAL(8, 3), allowNull: true }, // en grammes
 
-    // ── Prix ──────────────────────────────────────────────────────────────
+    // ── Prix & Offres ──────────────────────────────────────────────────────
     prix_achat: { type: DataTypes.DECIMAL(10, 2), allowNull: true,  defaultValue: 0  },
     prix_vente: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0  }, // prix final (calculé ou manuel)
+    en_promo:   { type: DataTypes.BOOLEAN,        allowNull: false, defaultValue: false }, // En offre / promotion ?
+    prix_promo: { type: DataTypes.DECIMAL(10, 2), allowNull: true }, // Prix réduit si en_promo
 
     // ── Stock ──────────────────────────────────────────────────────────────
     stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+
+    // ── Ventes (best sellers) ─────────────────────────────────────────────
+    // Incrémenté automatiquement à chaque vente — ne jamais décrementer manuellement
+    ventes_total: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   });

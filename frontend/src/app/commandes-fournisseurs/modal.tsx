@@ -213,6 +213,7 @@ export type LignesCommandeModalProps = {
   setSelectedStoneIdx: (idx: number) => void
   stoneCarat: string
   setStoneCarat: (val: string) => void
+  collections?: any[]
 }
 
 export function LignesCommandeModal({
@@ -233,6 +234,7 @@ export function LignesCommandeModal({
   setSelectedStoneIdx,
   stoneCarat,
   setStoneCarat,
+  collections = [],
 }: LignesCommandeModalProps) {
   return (
     <Modal
@@ -311,6 +313,19 @@ export function LignesCommandeModal({
                 <option value="pendentif">Pendentif</option>
                 <option value="chevillere">Chevillère</option>
                 <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Collection</label>
+              <select
+                className={styles.formSelect}
+                value={ligneForm.collection_id || ""}
+                onChange={(e) => setLigneForm((f) => ({ ...f, collection_id: e.target.value }))}
+              >
+                <option value="">Aucune collection</option>
+                {collections.map((col: any) => (
+                  <option key={col.id} value={col.id.toString()}>{col.nom}</option>
+                ))}
               </select>
             </div>
             <div className={styles.formGroup}>

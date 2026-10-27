@@ -5,11 +5,25 @@ export type SelectedStone = {
   carat?: number
 }
 
+export type Collection = {
+  id: number
+  nom: string
+  slug?: string
+  description?: string
+  image?: string
+  is_active: boolean
+  ordre: number
+  nombre_articles?: number
+}
+
 export type Article = {
   id: number
   nom: string
   description?: string
   image?: string
+  images?: string[]
+  collection_id?: number | null
+  collection?: { id: number; nom: string; slug?: string }
   categorie: string
   matiere: string
   matiere_detail?: string
@@ -21,13 +35,18 @@ export type Article = {
   poids?: number
   prix_achat?: number
   prix_vente: number
+  en_promo?: boolean
+  prix_promo?: number | null
   stock: number
+  ventes_total?: number
 }
 
 export type ArticleFormState = {
   nom: string
   description: string
   image: string
+  images: string[]
+  collection_id: string
   categorie: string
   matiere: string
   matiere_detail: string
@@ -39,6 +58,8 @@ export type ArticleFormState = {
   poids: string
   prix_achat: string
   prix_vente: string
+  en_promo: boolean
+  prix_promo: string
   stock: string
 }
 
@@ -58,6 +79,8 @@ export const emptyForm = (): ArticleFormState => ({
   nom: "",
   description: "",
   image: "",
+  images: [],
+  collection_id: "",
   categorie: "bague",
   matiere: "argent",
   matiere_detail: "",
@@ -69,12 +92,20 @@ export const emptyForm = (): ArticleFormState => ({
   poids: "",
   prix_achat: "",
   prix_vente: "",
+  en_promo: false,
+  prix_promo: "",
   stock: "0",
 })
 
 export const FALLBACK_IMAGE = "/uploads/rieen.jfif"
 
-export const getImageUrl = (imagePath?: string | null): string => {
+export const getImageUrl = (imagePath?: string | null, images?: string[] | null): string => {
+  // 1. Si on a des images dans le tableau Supabase Storage, prendre la première
+  if (images && images.length > 0 && images[0]?.trim()) {
+    const first = images[0].trim()
+    if (first.startsWith("http://") || first.startsWith("https://")) return first
+  }
+  // 2. Sinon si une image simple est fournie
   const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "")
   if (!imagePath || !imagePath.trim()) {
     return `${baseUrl}${FALLBACK_IMAGE}`
@@ -150,11 +181,15 @@ export const saveArticle = async (
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const finalImagePath = form.image.trim() || null
+    // Nettoyer les images et garder max 5
+    const cleanImages = (form.images || []).map((img) => img.trim()).filter(Boolean).slice(0, 5)
 
     const payload = {
       nom: form.nom.trim(),
       description: form.description || null,
-      image: finalImagePath,
+      image: finalImagePath || (cleanImages.length > 0 ? cleanImages[0] : null),
+      images: cleanImages,
+      collection_id: form.collection_id ? parseInt(form.collection_id, 10) : null,
       categorie: form.categorie,
       matiere: form.matiere,
       matiere_detail: form.matiere_detail || null,
@@ -166,6 +201,8 @@ export const saveArticle = async (
       poids: form.poids ? parseFloat(form.poids) : null,
       prix_achat: form.prix_achat ? parseFloat(form.prix_achat) : 0,
       prix_vente: parseFloat(form.prix_vente),
+      en_promo: form.en_promo || false,
+      prix_promo: form.en_promo && form.prix_promo ? parseFloat(form.prix_promo) : null,
       stock: parseInt(form.stock) || 0,
     }
 
@@ -183,7 +220,7 @@ export const saveArticle = async (
       return { success: false, error: err.message || "Une erreur est survenue lors de l'enregistrement." }
     }
 
-    invalidateCache("articles")
+    invalidateCache("articles", "collections")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Impossible de contacter le serveur." }
@@ -197,9 +234,88 @@ export const deleteArticle = async (id: number): Promise<{ success: boolean; err
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la suppression." }
     }
-    invalidateCache("articles")
+    invalidateCache("articles", "collections")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
   }
 }
+
+// ── Image Upload & Suppression Supabase Storage ─────────────────────────────
+
+export const uploadArticleImage = async (base64: string, fileName?: string): Promise<string> => {
+  const res = await fetch(`${API_BASE}/articles/upload-image`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file: base64, fileName }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || "Échec de l'upload de l'image vers Supabase Storage.")
+  }
+  const data = await res.json()
+  return data.url
+}
+
+export const deleteStorageImage = async (url: string): Promise<boolean> => {
+  try {
+    if (!url || !url.includes("supabase.co")) return true
+    const res = await fetch(`${API_BASE}/articles/delete-storage-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    })
+    return res.ok
+  } catch (err) {
+    console.warn("Échec de la suppression de l'image sur Supabase Storage:", err)
+    return false
+  }
+}
+
+// ── Gestion des Collections ───────────────────────────────────────────────────
+
+export const fetchCollections = async (activeOnly = false): Promise<Collection[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/collections${activeOnly ? "?active_only=true" : ""}`)
+    if (!res.ok) return []
+    return await res.json()
+  } catch {
+    return []
+  }
+}
+
+export const createCollection = async (
+  data: Partial<Collection>
+): Promise<{ success: boolean; collection?: Collection; error?: string }> => {
+  try {
+    const res = await fetch(`${API_BASE}/collections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return { success: false, error: err.message || "Erreur lors de la création de la collection." }
+    }
+    const created = await res.json()
+    invalidateCache("collections", "articles")
+    return { success: true, collection: created }
+  } catch (error: any) {
+    return { success: false, error: error.message || "Impossible de contacter le serveur." }
+  }
+}
+
+export const deleteCollection = async (id: number): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const res = await fetch(`${API_BASE}/collections/${id}`, { method: "DELETE" })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return { success: false, error: err.message || "Erreur lors de la suppression de la collection." }
+    }
+    invalidateCache("collections", "articles")
+    return { success: true }
+  } catch {
+    return { success: false, error: "Impossible de contacter le serveur." }
+  }
+}
+

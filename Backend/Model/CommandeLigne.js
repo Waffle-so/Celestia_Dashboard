@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) =>
       type: DataTypes.ENUM("bague", "collier", "bracelet", "boucles_oreilles", "pendentif", "chevillere", "autre"),
       defaultValue: "autre",
     },
+    collection_id: { type: DataTypes.INTEGER, allowNull: true }, // Collection assignée lors de la commande fournisseur
     matiere: {
       type: DataTypes.ENUM("argent", "or_18k", "or_blanc", "or_nordique", "acier_inoxydable", "autre"),
       defaultValue: "argent",

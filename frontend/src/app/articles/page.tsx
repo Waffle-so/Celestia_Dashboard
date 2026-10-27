@@ -1,15 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { Search, Plus, Gem, Edit2, Trash2 } from "lucide-react"
+import { Search, Plus, Gem, Edit2, Trash2, Layers, Sparkles } from "lucide-react"
 import styles from "../../Style/Articles.module.css"
 import { Button } from "@/components/ui/button"
 import { AlertMessage } from "@/components/AlertMessage"
 import { ArticleModal, DeleteArticleModal } from "./modal"
+import { CollectionModal } from "./collectionModal"
 import {
   type SelectedStone,
   type Article,
   type ArticleFormState,
+  type Collection,
   CATEGORIES,
   MATIERES,
   MCHEELS,
@@ -20,6 +22,7 @@ import {
   filterArticles,
   calculateArticleStats,
   fetchArticles,
+  fetchCollections,
   saveArticle,
   deleteArticle,
 } from "./actions"
@@ -32,14 +35,17 @@ const stockBadge = (stock: number) => {
 
 export default function ArticlesPage() {
   const [articles, setArticles] = React.useState<Article[]>([])
+  const [collections, setCollections] = React.useState<Collection[]>([])
   const [loading, setLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [categoryFilter, setCategoryFilter] = React.useState("all")
+  const [collectionFilter, setCollectionFilter] = React.useState("all")
   const [currentPage, setCurrentPage] = React.useState(1)
   const itemsPerPage = 12
 
   // Modal create / edit
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<Article | null>(null)
   const [form, setForm] = React.useState<ArticleFormState>(emptyForm())
   const [modalError, setModalError] = React.useState<string | null>(null)
@@ -67,8 +73,16 @@ export default function ArticlesPage() {
     }
   }
 
+  const loadCollections = async () => {
+    try {
+      const data = await fetchCollections()
+      setCollections(data)
+    } catch {}
+  }
+
   React.useEffect(() => {
     loadArticles()
+    loadCollections()
   }, [])
 
   const openCreate = () => {
@@ -87,6 +101,8 @@ export default function ArticlesPage() {
       nom: article.nom,
       description: article.description || "",
       image: article.image || "",
+      images: Array.isArray(article.images) ? article.images : (article.image ? [article.image] : []),
+      collection_id: article.collection_id?.toString() || "",
       categorie: article.categorie,
       matiere: article.matiere,
       matiere_detail: article.matiere_detail || "",
@@ -98,6 +114,8 @@ export default function ArticlesPage() {
       poids: article.poids?.toString() || "",
       prix_achat: article.prix_achat?.toString() || "",
       prix_vente: article.prix_vente.toString(),
+      en_promo: article.en_promo || false,
+      prix_promo: article.prix_promo?.toString() || "",
       stock: article.stock.toString(),
     })
     setModalError(null)
@@ -106,6 +124,7 @@ export default function ArticlesPage() {
     setStoneCarat("")
     setIsOpen(true)
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,13 +159,23 @@ export default function ArticlesPage() {
 
   const setField = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }))
 
-  const filtered = filterArticles(articles, searchQuery, categoryFilter)
+  const filtered = articles.filter((a) => {
+    const q = searchQuery.toLowerCase()
+    const matchesQuery = a.nom.toLowerCase().includes(q) || a.categorie.includes(q) || (a.collection?.nom && a.collection.nom.toLowerCase().includes(q))
+    const matchesCat = categoryFilter === "all" || a.categorie === categoryFilter
+    const matchesCol = collectionFilter === "all"
+      ? true
+      : collectionFilter === "none"
+        ? !a.collection_id
+        : a.collection_id?.toString() === collectionFilter
+    return matchesQuery && matchesCat && matchesCol
+  })
   const totalPages = Math.ceil(filtered.length / itemsPerPage)
   const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, categoryFilter])
+  }, [searchQuery, categoryFilter, collectionFilter])
 
   const { totalStock, valeurStockAchat, valeurStockVente, lowStock } = calculateArticleStats(articles)
 
@@ -161,15 +190,24 @@ export default function ArticlesPage() {
         <div>
           <h1 className={styles.title}>Catalogue</h1>
           <p style={{ color: "var(--muted-foreground)", fontSize: "0.875rem", marginTop: "0.25rem" }}>
-            Gérez vos bijoux et articles en vente
+            Gérez vos bijoux, collections et articles en vente
           </p>
         </div>
-        <Button
-          onClick={openCreate}
-          style={{ borderRadius: "8px", backgroundColor: "#18181b", color: "white", gap: "0.5rem" }}
-        >
-          <Plus className="h-4 w-4" /> Ajouter un article
-        </Button>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <Button
+            variant="outline"
+            onClick={() => setIsCollectionModalOpen(true)}
+            style={{ borderRadius: "8px", gap: "0.4rem" }}
+          >
+            <Layers className="h-4 w-4" /> Gérer les collections ({collections.length})
+          </Button>
+          <Button
+            onClick={openCreate}
+            style={{ borderRadius: "8px", backgroundColor: "#18181b", color: "white", gap: "0.5rem" }}
+          >
+            <Plus className="h-4 w-4" /> Ajouter un article
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -202,7 +240,7 @@ export default function ArticlesPage() {
           <Search className={styles.searchIcon} />
           <input
             className={styles.searchInput}
-            placeholder="Rechercher un article..."
+            placeholder="Rechercher par nom, catégorie, collection..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -215,6 +253,17 @@ export default function ArticlesPage() {
           <option value="all">Toutes les catégories</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c.replace("_", " ")}</option>
+          ))}
+        </select>
+        <select
+          className={styles.filterSelect}
+          value={collectionFilter}
+          onChange={(e) => setCollectionFilter(e.target.value)}
+        >
+          <option value="all">Toutes les collections</option>
+          <option value="none">Sans collection</option>
+          {collections.map((col) => (
+            <option key={col.id} value={col.id.toString()}>📁 {col.nom}</option>
           ))}
         </select>
       </div>
@@ -235,7 +284,7 @@ export default function ArticlesPage() {
               <div key={article.id} className={styles.card} onClick={() => openEdit(article)}>
                 <div className={styles.cardHeader}>
                   <img
-                    src={getImageUrl(article.image)}
+                    src={getImageUrl(article.image, article.images)}
                     alt={article.nom}
                     className={styles.cardImage}
                     onError={(e) => {
@@ -244,6 +293,21 @@ export default function ArticlesPage() {
                   />
                   <div className={styles.cardBadgeGroup}>
                     <span className={`${styles.badge} ${cls}`}>{label}</span>
+                    {article.ventes_total && article.ventes_total > 0 ? (
+                      <span className={styles.badge} style={{ backgroundColor: "#8b5cf6", color: "white", fontWeight: 600 }}>
+                        ⭐ {article.ventes_total} vendu{article.ventes_total > 1 ? "s" : ""}
+                      </span>
+                    ) : null}
+                    {article.en_promo && (
+                      <span className={styles.badge} style={{ backgroundColor: "#eab308", color: "#000", fontWeight: 700 }}>
+                        🏷️ Offre
+                      </span>
+                    )}
+                    {article.images && article.images.length > 1 && (
+                      <span className={styles.badge} style={{ backgroundColor: "rgba(0,0,0,0.6)", color: "white" }}>
+                        📷 {article.images.length}
+                      </span>
+                    )}
                     {article.a_des_pierres && (
                       <span className={`${styles.badge} ${styles.badgeGreen}`}>Pierres ✦</span>
                     )}
@@ -258,6 +322,11 @@ export default function ArticlesPage() {
                 </div>
 
                 <div className={styles.cardMeta}>
+                  {article.collection && (
+                    <span className={styles.tag} style={{ borderColor: "rgba(59, 130, 246, 0.4)", color: "#60a5fa", backgroundColor: "rgba(59, 130, 246, 0.08)" }}>
+                      📁 {article.collection.nom}
+                    </span>
+                  )}
                   <span className={styles.tag}>{article.categorie.replace("_", " ")}</span>
                   <span className={styles.tag}>{article.matiere.replace(/_/g, " ")}</span>
                   {article.mchelel !== "aucun" && (
@@ -268,11 +337,11 @@ export default function ArticlesPage() {
                   )}
                   {article.a_des_pierres && article.type_pierres && Array.isArray(article.type_pierres) &&
                     article.type_pierres.map((p: any, idx: number) => {
-                      const label = typeof p === "string" ? p : p.label;
+                      const stoneLabel = typeof p === "string" ? p : p.label;
                       const caratStr = typeof p === "object" && p.carat ? ` (${p.carat} ct)` : "";
                       return (
                         <span key={idx} className={styles.tag} style={{ borderColor: "rgba(16, 185, 129, 0.3)", color: "#10b981", backgroundColor: "rgba(16, 185, 129, 0.05)" }}>
-                          ✦ {label}{caratStr}
+                          ✦ {stoneLabel}{caratStr}
                         </span>
                       )
                     })
@@ -286,9 +355,20 @@ export default function ArticlesPage() {
                         Coût d'achat: {parseFloat(article.prix_achat.toString()).toLocaleString("fr-DZ")} DA
                       </span>
                     )}
-                    <span className={styles.cardPrice}>
-                      {parseFloat(article.prix_vente.toString()).toLocaleString("fr-DZ")} DA
-                    </span>
+                    {article.en_promo && article.prix_promo ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.8rem" }}>
+                          {parseFloat(article.prix_vente.toString()).toLocaleString("fr-DZ")} DA
+                        </span>
+                        <span className={styles.cardPrice} style={{ color: "#eab308" }}>
+                          {parseFloat(article.prix_promo.toString()).toLocaleString("fr-DZ")} DA
+                        </span>
+                      </div>
+                    ) : (
+                      <span className={styles.cardPrice}>
+                        {parseFloat(article.prix_vente.toString()).toLocaleString("fr-DZ")} DA
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); setDeleteId(article.id) }}
@@ -321,7 +401,7 @@ export default function ArticlesPage() {
             Précédent
           </button>
           <span style={{ fontSize: "0.875rem", color: "#71717a" }}>
-            Page {currentPage} / {totalPages}
+            Page {currentPage} sur {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -357,6 +437,18 @@ export default function ArticlesPage() {
         setSelectedStoneIdx={setSelectedStoneIdx}
         stoneCarat={stoneCarat}
         setStoneCarat={setStoneCarat}
+        collections={collections}
+      />
+
+      {/* ── MANAGE COLLECTIONS MODAL ── */}
+      <CollectionModal
+        isOpen={isCollectionModalOpen}
+        onClose={() => setIsCollectionModalOpen(false)}
+        collections={collections}
+        onCollectionsChange={() => {
+          loadCollections()
+          loadArticles()
+        }}
       />
 
       {/* ── DELETE CONFIRM MODAL ── */}

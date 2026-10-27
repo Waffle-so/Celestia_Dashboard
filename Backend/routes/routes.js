@@ -7,6 +7,7 @@ const CommandeLigneController = require("../Controller/CommandeLigneController")
 const CommandeClientController = require("../Controller/CommandeClientController");
 const ClientController = require("../Controller/ClientController");
 const ArticleController = require("../Controller/ArticleController");
+const CollectionController = require("../Controller/CollectionController");
 const BudgetController = require("../Controller/BudgetController");
 const PortefeuilleController = require("../Controller/PortefeuilleController");
 const DashboardController = require("../Controller/DashboardController");
@@ -63,14 +64,31 @@ router.put("/commandes-clients/:id", CommandeClientController.updateCommandeClie
 router.delete("/commandes-clients/:id", CommandeClientController.deleteCommandeClient);
 
 /* =====================================================
+   COLLECTIONS (Pour catalogue & site vitrine)
+   ===================================================== */
+router.get("/collections", CollectionController.getAllCollections);
+router.get("/collections/:id", CollectionController.getCollectionById);
+router.post("/collections", CollectionController.createCollection);
+router.put("/collections/:id", CollectionController.updateCollection);
+router.delete("/collections/:id", CollectionController.deleteCollection);
+
+/* =====================================================
    ARTICLES / CATALOGUE BIJOUX
    ===================================================== */
 router.get("/articles", ArticleController.getAllArticles);
+router.get("/articles/bestsellers", ArticleController.getBestSellers);
+router.get("/articles/offres", ArticleController.getOffres);
+router.get("/articles/categories", ArticleController.getAllCategorie);
+router.post("/articles/upload-image", ArticleController.uploadImage);
 router.get("/articles/:id", ArticleController.getArticleById);
 router.post("/articles", ArticleController.createArticle);
 router.put("/articles/:id", ArticleController.updateArticle);
 router.delete("/articles/:id", ArticleController.deleteArticle);
-router.get("/articles/categories", ArticleController.getAllCategorie);
+// Supprime directement une image de Supabase Storage
+router.post("/articles/delete-storage-image", ArticleController.deleteStorageImage);
+// Supprime une image précise du tableau d'images d'un article + du Supabase Storage
+router.delete("/articles/:id/image", ArticleController.deleteArticleImage);
+
 
 /* =====================================================
    BUDGET / DÉPENSES

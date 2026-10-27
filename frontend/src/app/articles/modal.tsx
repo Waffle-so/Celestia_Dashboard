@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, X } from "lucide-react"
+import { Plus, X, Upload, Sparkles, Folder, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/Modal"
 import styles from "../../Style/Articles.module.css"
@@ -10,10 +10,13 @@ import {
   type Article,
   type ArticleFormState,
   type SelectedStone,
+  type Collection,
   CATEGORIES,
   MATIERES,
   MCHEELS,
   getImageUrl,
+  uploadArticleImage,
+  deleteStorageImage,
 } from "./actions"
 
 type ArticleModalProps = {
@@ -32,6 +35,7 @@ type ArticleModalProps = {
   setSelectedStoneIdx: (idx: number) => void
   stoneCarat: string
   setStoneCarat: (val: string) => void
+  collections?: Collection[]
 }
 
 export function ArticleModal({
@@ -50,7 +54,66 @@ export function ArticleModal({
   setSelectedStoneIdx,
   stoneCarat,
   setStoneCarat,
+  collections = [],
 }: ArticleModalProps) {
+  const [uploading, setUploading] = React.useState(false)
+
+  const handleFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const currentImages = form.images || []
+    const remainingSlots = 5 - currentImages.length
+    if (remainingSlots <= 0) {
+      setModalError("Vous avez déjà atteint le maximum de 5 images pour cet article.")
+      return
+    }
+
+    const selectedList = Array.from(files).slice(0, remainingSlots)
+    setUploading(true)
+    setModalError(null)
+
+    try {
+      const newUrls: string[] = []
+      for (const file of selectedList) {
+        const reader = new FileReader()
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+        const base64 = await base64Promise
+        const uploadedUrl = await uploadArticleImage(base64, file.name)
+        newUrls.push(uploadedUrl)
+      }
+
+      const updated = [...currentImages, ...newUrls].slice(0, 5)
+      setField("images", updated)
+      if (!form.image && updated.length > 0) {
+        setField("image", updated[0])
+      }
+    } catch (err: any) {
+      setModalError(err.message || "Erreur lors de l'upload vers Supabase Storage.")
+    } finally {
+      setUploading(false)
+      e.target.value = ""
+    }
+  }
+
+  const handleRemoveImage = async (indexToRemove: number) => {
+    const targetUrl = (form.images || [])[indexToRemove]
+    const updated = (form.images || []).filter((_, idx) => idx !== indexToRemove)
+    setField("images", updated)
+    if (form.image === targetUrl) {
+      setField("image", updated[0] || "")
+    }
+
+    // Supprimer immédiatement le fichier physique dans Supabase Storage
+    if (targetUrl) {
+      await deleteStorageImage(targetUrl)
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -66,6 +129,7 @@ export function ArticleModal({
           <Button
             type="submit"
             form="article-form"
+            disabled={uploading}
             style={{ borderRadius: "8px", backgroundColor: "#18181b", color: "white" }}
           >
             {editing ? "Enregistrer les modifications" : "Créer l'article"}
@@ -90,38 +154,129 @@ export function ArticleModal({
             <label className={styles.formLabel}>Nom de l'article *</label>
             <input className={styles.formInput} placeholder="Ex: Bague solitaire argent" value={form.nom} onChange={(e) => setField("nom", e.target.value)} required />
           </div>
+
+          {/* SECTION: Images (Supabase Storage - max 5) */}
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>URL de l'image</label>
-            <input
-              type="text"
-              className={styles.formInput}
-              placeholder="https://exemple.com/image.jpg (laissez vide pour l'image par défaut)"
-              value={form.image}
-              onChange={(e) => setField("image", e.target.value)}
-            />
-            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ width: 48, height: 48, borderRadius: 6, overflow: 'hidden', border: '1px solid #e4e4e7', flexShrink: 0, backgroundColor: '#f4f4f5' }}>
-                <img
-                  src={getImageUrl(form.image)}
-                  alt="Aperçu"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = getImageUrl()
-                  }}
-                />
-              </div>
-              <span style={{ fontSize: '0.75rem', color: '#71717a' }}>
-                {form.image ? "Aperçu de l'URL" : "Image par défaut (rieen)"}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+              <label className={styles.formLabel} style={{ marginBottom: 0 }}>
+                Photos de l'article (Max 5)
+              </label>
+              <span style={{ fontSize: "0.75rem", color: (form.images?.length || 0) >= 5 ? "#ef4444" : "#a1a1aa", fontWeight: 500 }}>
+                {(form.images?.length || 0)}/5 images
               </span>
             </div>
+
+            {/* Bouton d'upload vers Supabase */}
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+              <label
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.45rem",
+                  padding: "0.5rem 0.85rem",
+                  borderRadius: "0.5rem",
+                  background: (form.images?.length || 0) >= 5 ? "rgba(255,255,255,0.05)" : "rgba(59, 130, 246, 0.12)",
+                  color: (form.images?.length || 0) >= 5 ? "#71717a" : "#3b82f6",
+                  cursor: (form.images?.length || 0) >= 5 || uploading ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  border: "1px dashed rgba(59, 130, 246, 0.35)",
+                }}
+              >
+                <Upload style={{ width: 16, height: 16 }} />
+                {uploading ? "Upload vers Supabase en cours..." : "Téléverser des photos"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={(form.images?.length || 0) >= 5 || uploading}
+                  style={{ display: "none" }}
+                  onChange={handleFilesSelect}
+                />
+              </label>
+              <span style={{ fontSize: "0.75rem", color: "#71717a" }}>
+                Stockées automatiquement dans Supabase Storage
+              </span>
+            </div>
+
+            {/* Galerie d'aperçu des miniatures */}
+            {(form.images && form.images.length > 0) ? (
+              <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center" }}>
+                {form.images.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      position: "relative",
+                      width: 68,
+                      height: 68,
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      border: idx === 0 ? "2px solid #3b82f6" : "1px solid rgba(255,255,255,0.15)",
+                      backgroundColor: "#18181b",
+                    }}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Image ${idx + 1}`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                    {idx === 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          backgroundColor: "rgba(59, 130, 246, 0.9)",
+                          color: "white",
+                          fontSize: "8px",
+                          textAlign: "center",
+                          fontWeight: 700,
+                          padding: "1px 0",
+                        }}
+                      >
+                        Principale
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      style={{
+                        position: "absolute",
+                        top: 2,
+                        right: 2,
+                        background: "rgba(0,0,0,0.75)",
+                        color: "#ef4444",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: 18,
+                        height: 18,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Supprimer cette image"
+                    >
+                      <X style={{ width: 12, height: 12 }} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: "0.75rem", color: "#71717a", fontStyle: "italic" }}>
+                Aucune image importée. L'image par défaut sera utilisée.
+              </div>
+            )}
           </div>
+
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Description</label>
             <textarea className={styles.formTextarea} placeholder="Décrivez le bijou..." value={form.description} onChange={(e) => setField("description", e.target.value)} />
           </div>
 
-          {/* SECTION: Catégorie & Matière */}
-          <div className={styles.formSectionTitle}>Matière & Catégorie</div>
+          {/* SECTION: Catégorie, Collection & Matière */}
+          <div className={styles.formSectionTitle}>Catégorie, Collection & Matière</div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Catégorie</label>
@@ -130,13 +285,26 @@ export function ArticleModal({
               </select>
             </div>
             <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Collection</label>
+              <select
+                className={styles.formSelect}
+                value={form.collection_id || ""}
+                onChange={(e) => setField("collection_id", e.target.value)}
+              >
+                <option value="">Aucune collection</option>
+                {collections.map((col) => (
+                  <option key={col.id} value={col.id.toString()}>{col.nom}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
               <label className={styles.formLabel}>Matière principale</label>
               <select className={styles.formSelect} value={form.matiere} onChange={(e) => setField("matiere", e.target.value)}>
                 {MATIERES.map((m) => <option key={m} value={m}>{m.replace(/_/g, " ")}</option>)}
               </select>
             </div>
-          </div>
-          <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Précision matière</label>
               <input className={styles.formInput} placeholder="Ex: argent 925" value={form.matiere_detail} onChange={(e) => setField("matiere_detail", e.target.value)} />
@@ -300,6 +468,59 @@ export function ArticleModal({
               <input className={styles.formInput} type="number" min="0" step="1" placeholder="0" value={form.stock} onChange={(e) => setField("stock", e.target.value)} />
             </div>
           </div>
+
+          {/* SECTION: Offres & Promotions */}
+          <div
+            style={{
+              background: "rgba(234, 179, 8, 0.06)",
+              border: "1px solid rgba(234, 179, 8, 0.25)",
+              borderRadius: "0.5rem",
+              padding: "0.85rem 1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                color: "#eab308",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={form.en_promo || false}
+                onChange={(e) => setField("en_promo", e.target.checked)}
+                style={{ accentColor: "#eab308", width: 16, height: 16 }}
+              />
+              🏷️ Mettre en promotion / Offre spéciale
+            </label>
+
+            {form.en_promo && (
+              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginTop: "0.25rem", flexWrap: "wrap" }}>
+                <label className={styles.formLabel} style={{ marginBottom: 0, whiteSpace: "nowrap" }}>
+                  Prix promotionnel (DA) *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ex: 8500"
+                  value={form.prix_promo || ""}
+                  onChange={(e) => setField("prix_promo", e.target.value)}
+                  className={styles.formInput}
+                  style={{ maxWidth: "200px" }}
+                  required={form.en_promo}
+                />
+              </div>
+            )}
+          </div>
+
 
         </div>
       </form>

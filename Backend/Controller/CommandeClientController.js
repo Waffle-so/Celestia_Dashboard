@@ -1,4 +1,4 @@
-const { sequelize, CommandeClient, Client, Article, Portefeuille, PortefeuilleLog } = require("../Model");
+const { sequelize, CommandeClient, CommandeClientLigne, Client, Article, Portefeuille, PortefeuilleLog } = require("../Model");
 
 const getPortefeuille = async (transaction) => {
   const [portefeuille] = await Portefeuille.findOrCreate({
@@ -44,7 +44,14 @@ const creditCommandeClientIfDelivered = async (commande, transaction) => {
 const getAllCommandesClients = async (req, res) => {
   try {
     const commandes = await CommandeClient.findAll({
-      include: [{ model: Client, attributes: ["id", "nom", "telephone"] }],
+      include: [
+        { model: Client, attributes: ["id", "nom", "telephone"] },
+        {
+          model: CommandeClientLigne,
+          as: "lignes",
+          include: [{ model: Article, as: "article", attributes: ["id", "nom", "images", "prix_vente", "stock"] }],
+        },
+      ],
       order: [["date_commande", "DESC"]],
     });
     res.json(commandes);
@@ -57,7 +64,14 @@ const getAllCommandesClients = async (req, res) => {
 const getCommandeClientById = async (req, res) => {
   try {
     const commande = await CommandeClient.findByPk(req.params.id, {
-      include: [{ model: Client }],
+      include: [
+        { model: Client },
+        {
+          model: CommandeClientLigne,
+          as: "lignes",
+          include: [{ model: Article, as: "article" }],
+        },
+      ],
     });
     if (!commande) return res.status(404).json({ message: "Commande introuvable." });
     res.json(commande);
@@ -65,6 +79,7 @@ const getCommandeClientById = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
 
 // POST /api/commandes-clients
 const createCommandeClient = async (req, res) => {
@@ -122,7 +137,29 @@ const createCommandeClient = async (req, res) => {
     );
 
     for (const { article, qty } of articlesToUpdate) {
-      await article.update({ stock: article.stock - qty }, { transaction });
+      // 1. Décrémenter le stock & incrémenter le compteur de ventes (Best sellers)
+      const newStock = Math.max(0, article.stock - qty);
+      const newVentes = (parseInt(article.ventes_total, 10) || 0) + qty;
+      await article.update(
+        {
+          stock: newStock,
+          ventes_total: newVentes,
+        },
+        { transaction }
+      );
+
+      // 2. Enregistrer la ligne dans CommandeClientLigne
+      await CommandeClientLigne.create(
+        {
+          commande_client_id: commande.id,
+          article_id: article.id,
+          nom: article.nom,
+          quantite: qty,
+          prix_unitaire: article.prix_vente,
+          prix_total: (parseFloat(article.prix_vente) || 0) * qty,
+        },
+        { transaction }
+      );
     }
 
     await creditCommandeClientIfDelivered(commande, transaction);
@@ -200,6 +237,28 @@ const deleteCommandeClient = async (req, res) => {
         }
         
         await log.destroy({ transaction });
+      }
+    }
+
+    // Restaurer le stock et le compteur de ventes pour chaque article de la commande
+    const lignes = await CommandeClientLigne.findAll({
+      where: { commande_client_id: commande.id },
+      transaction,
+    });
+    for (const ligne of lignes) {
+      if (ligne.article_id) {
+        const article = await Article.findByPk(ligne.article_id, { transaction });
+        if (article) {
+          const restoredStock = parseInt(article.stock, 10) + parseInt(ligne.quantite, 10);
+          const restoredVentes = Math.max(0, (parseInt(article.ventes_total, 10) || 0) - parseInt(ligne.quantite, 10));
+          await article.update(
+            {
+              stock: restoredStock,
+              ventes_total: restoredVentes,
+            },
+            { transaction }
+          );
+        }
       }
     }
 
