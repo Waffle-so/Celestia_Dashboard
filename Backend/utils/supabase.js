@@ -5,9 +5,18 @@ const supabaseUrl = process.env.SUPABASE_URL || "";
 // On utilise la secret key (service role) pour bypasser les RLS côté backend
 const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false },
-});
+let supabase = null;
+if (supabaseUrl && supabaseKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
+  } catch (err) {
+    console.warn("⚠️ Erreur lors de l'initialisation de Supabase:", err.message);
+  }
+} else {
+  console.warn("⚠️ SUPABASE_URL ou SUPABASE_SECRET_KEY manquante dans les variables d'environnement.");
+}
 
 // ── Bucket où sont stockées les images des articles ──────────────────────────
 const BUCKET = "articles";
@@ -18,6 +27,9 @@ const BUCKET = "articles";
  */
 const deleteImageFromStorage = async (publicUrl) => {
   try {
+    if (!supabase) {
+      return { skipped: true, reason: "Supabase non initialisé" };
+    }
     if (!publicUrl || typeof publicUrl !== "string") {
       return { error: "URL d'image invalide ou manquante." };
     }
@@ -73,6 +85,7 @@ const deleteImagesFromStorage = async (urls) => {
  */
 const ensureBucketExists = async () => {
   try {
+    if (!supabase) return;
     const { data: buckets } = await supabase.storage.listBuckets();
     const exists = buckets && buckets.some((b) => b.name === BUCKET);
     if (!exists) {
@@ -91,6 +104,9 @@ const ensureBucketExists = async () => {
  */
 const uploadImageToStorage = async (base64Data, originalName = "image.jpg") => {
   try {
+    if (!supabase) {
+      return { error: "Supabase Storage non initialisé. Ajoutez SUPABASE_URL et SUPABASE_SECRET_KEY dans les variables d'environnement." };
+    }
     await ensureBucketExists();
 
     let contentType = "image/jpeg";
