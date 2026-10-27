@@ -14,21 +14,10 @@ module.exports = (sequelize, DataTypes) =>
       allowNull: true,
       defaultValue: [],
     },
-    // Image principale (champ virtuel rétro-compatible sans colonne SQL)
+    // Rétro-compatibilité : ancienne colonne image conservée
     image: {
-      type: DataTypes.VIRTUAL,
-      get() {
-        const imgs = this.getDataValue("images");
-        if (Array.isArray(imgs) && imgs.length > 0) return imgs[0];
-        return null;
-      },
-      set(val) {
-        if (!val) return;
-        const current = this.getDataValue("images") || [];
-        if (!current.includes(val)) {
-          this.setDataValue("images", [val, ...current].slice(0, 5));
-        }
-      },
+      type: DataTypes.STRING,
+      allowNull: true,
     },
 
     // ── Catégorie & Collection ───────────────────────────────────────────
