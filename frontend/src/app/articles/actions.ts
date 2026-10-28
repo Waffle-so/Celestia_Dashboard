@@ -97,7 +97,7 @@ export const emptyForm = (): ArticleFormState => ({
   stock: "0",
 })
 
-export const FALLBACK_IMAGE = "/uploads/rieen.jfif"
+export const FALLBACK_IMAGE = "/uploads/rieen.webp"
 
 export const getImageUrl = (imagePath?: string | null, images?: string[] | null): string => {
   // 1. Si on a des images dans le tableau Supabase Storage, prendre la première
@@ -105,15 +105,23 @@ export const getImageUrl = (imagePath?: string | null, images?: string[] | null)
     const first = images[0].trim()
     if (first.startsWith("http://") || first.startsWith("https://")) return first
   }
-  // 2. Sinon si une image simple est fournie
-  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "")
+
+  // 2. Si aucune image fournie ou image fallback, servir directement depuis le frontend (0 requête Railway)
   if (!imagePath || !imagePath.trim()) {
-    return `${baseUrl}${FALLBACK_IMAGE}`
+    return FALLBACK_IMAGE
   }
+
   const trimmed = imagePath.trim()
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     return trimmed
   }
+
+  if (trimmed === "/uploads/rieen.jfif" || trimmed === "/uploads/rieen.webp" || trimmed === "/rieen.webp" || trimmed === FALLBACK_IMAGE) {
+    return FALLBACK_IMAGE
+  }
+
+  // 3. Sinon si un ancien chemin relatif backend est fourni
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "")
   return `${baseUrl}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`
 }
 
