@@ -275,10 +275,17 @@ export const deleteStorageImage = async (url: string): Promise<boolean> => {
 // ── Gestion des Collections ───────────────────────────────────────────────────
 
 export const fetchCollections = async (activeOnly = false): Promise<Collection[]> => {
+  const cacheKey = activeOnly ? "collections:active" : "collections"
+  const cached = getCache<Collection[]>(cacheKey)
+  if (cached) return cached
+
   try {
     const res = await fetch(`${API_BASE}/collections${activeOnly ? "?active_only=true" : ""}`)
     if (!res.ok) return []
-    return await res.json()
+    const data = await res.json()
+    const collections = Array.isArray(data) ? data : []
+    setCache(cacheKey, collections)
+    return collections
   } catch {
     return []
   }
