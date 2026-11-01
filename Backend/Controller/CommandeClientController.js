@@ -202,7 +202,12 @@ const updateCommandeClientWithWallet = async (req, res) => {
     const avance = req.body.avance ?? commande.avance;
     const reste = (parseFloat(prix_total) - parseFloat(avance)).toFixed(2);
 
-    await commande.update({ ...req.body, reste }, { transaction });
+    const updateData = { ...req.body, reste };
+    if (req.body.statut === "livre" && !req.body.date_livraison && !commande.date_livraison) {
+      updateData.date_livraison = new Date().toISOString().split("T")[0];
+    }
+
+    await commande.update(updateData, { transaction });
     await creditCommandeClientIfDelivered(commande, transaction);
 
     await transaction.commit();

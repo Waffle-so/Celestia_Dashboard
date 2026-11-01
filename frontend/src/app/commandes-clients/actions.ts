@@ -112,31 +112,63 @@ export const fetchCommandesClientsData = async (): Promise<{
   clients: Client[]
   articles: Article[]
 }> => {
-  type CCCache = { commandes: CommandeClient[]; clients: Client[]; articles: Article[] }
-  const cached = getCache<CCCache>("commandes-clients")
-  if (cached) return cached
+  let cachedCmd = getCache<CommandeClient[]>("commandes-clients")
+  let cachedCli = getCache<Client[]>("clients")
+  let cachedArt = getCache<Article[]>("articles")
 
-  const [resCmd, resCli, resArt] = await Promise.all([
-    fetch(`${API_BASE}/commandes-clients`),
-    fetch(`${API_BASE}/clients`),
-    fetch(`${API_BASE}/articles`),
-  ])
+  const promises: Promise<void>[] = []
 
-  if (!resCmd.ok || !resCli.ok) {
-    throw new Error("Erreur lors du chargement des données des commandes.")
+  if (!cachedCmd) {
+    promises.push(
+      fetch(`${API_BASE}/commandes-clients`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Erreur lors du chargement des commandes clients.")
+          return res.json()
+        })
+        .then((data) => {
+          const arr = Array.isArray(data) ? data : []
+          setCache("commandes-clients", arr)
+          cachedCmd = arr
+        })
+    )
   }
 
-  const cmdData = await resCmd.json()
-  const cliData = await resCli.json()
-  const artData = resArt.ok ? await resArt.json() : { articles: [] }
-
-  const result: CCCache = {
-    commandes: Array.isArray(cmdData) ? cmdData : [],
-    clients: Array.isArray(cliData) ? cliData : [],
-    articles: Array.isArray(artData.articles) ? artData.articles : [],
+  if (!cachedCli) {
+    promises.push(
+      fetch(`${API_BASE}/clients`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Erreur lors du chargement des clients.")
+          return res.json()
+        })
+        .then((data) => {
+          const arr = Array.isArray(data) ? data : []
+          setCache("clients", arr)
+          cachedCli = arr
+        })
+    )
   }
-  setCache("commandes-clients", result)
-  return result
+
+  if (!cachedArt) {
+    promises.push(
+      fetch(`${API_BASE}/articles`)
+        .then((res) => (res.ok ? res.json() : { articles: [] }))
+        .then((data) => {
+          const arr = Array.isArray(data.articles) ? data.articles : []
+          setCache("articles", arr)
+          cachedArt = arr
+        })
+    )
+  }
+
+  if (promises.length > 0) {
+    await Promise.all(promises)
+  }
+
+  return {
+    commandes: cachedCmd || [],
+    clients: cachedCli || [],
+    articles: cachedArt || [],
+  }
 }
 
 export const saveCommandeClient = async (
@@ -180,7 +212,7 @@ export const saveCommandeClient = async (
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Une erreur est survenue lors de l'enregistrement." }
     }
-    invalidateCache("commandes-clients", "articles")
+    invalidateCache("commandes-clients", "articles", "portefeuille", "dashboard", "profits", "budget")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -192,16 +224,21 @@ export const updateCommandeStatus = async (
   nextStatus: string
 ): Promise<{ success: boolean; error?: string }> => {
   try {
+    const payload: { statut: string; date_livraison?: string } = { statut: nextStatus }
+    if (nextStatus === "livre") {
+      payload.date_livraison = new Date().toISOString().split("T")[0]
+    }
+
     const res = await fetch(`${API_BASE}/commandes-clients/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statut: nextStatus }),
+      body: JSON.stringify(payload),
     })
 
     if (!res.ok) {
       return { success: false, error: "Erreur lors de la mise à jour du statut." }
     }
-    invalidateCache("commandes-clients")
+    invalidateCache("commandes-clients", "articles", "portefeuille", "dashboard", "profits", "budget")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur pour la mise à jour." }
@@ -217,7 +254,7 @@ export const deleteCommandeClient = async (id: number): Promise<{ success: boole
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la suppression." }
     }
-    invalidateCache("commandes-clients")
+    invalidateCache("commandes-clients", "articles", "portefeuille", "dashboard", "profits", "budget")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }

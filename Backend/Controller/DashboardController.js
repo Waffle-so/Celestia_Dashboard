@@ -81,23 +81,41 @@ const getStats = async (req, res) => {
     let whereClause = { statut: "livre" };
     let depensesWhereClause = {};
 
+    const dateFieldCondition = (op, val) => ({
+      [Op.or]: [
+        { date_livraison: { [op]: val } },
+        {
+          date_livraison: null,
+          date_commande: { [op]: val }
+        }
+      ]
+    });
+
     // Filtrer par période si spécifié
     if (period === "today") {
       const today = new Date().toISOString().split('T')[0];
-      whereClause.date_livraison = { [Op.eq]: today };
+      Object.assign(whereClause, dateFieldCondition(Op.eq, today));
       depensesWhereClause.date_depense = { [Op.eq]: today };
     } else if (period === "week") {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      whereClause.date_livraison = { [Op.gte]: weekAgo.toISOString().split('T')[0] };
-      depensesWhereClause.date_depense = { [Op.gte]: weekAgo.toISOString().split('T')[0] };
+      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+      Object.assign(whereClause, dateFieldCondition(Op.gte, weekAgoStr));
+      depensesWhereClause.date_depense = { [Op.gte]: weekAgoStr };
     } else if (period === "month") {
       const monthAgo = new Date();
       monthAgo.setMonth(monthAgo.getMonth() - 1);
-      whereClause.date_livraison = { [Op.gte]: monthAgo.toISOString().split('T')[0] };
-      depensesWhereClause.date_depense = { [Op.gte]: monthAgo.toISOString().split('T')[0] };
+      const monthAgoStr = monthAgo.toISOString().split('T')[0];
+      Object.assign(whereClause, dateFieldCondition(Op.gte, monthAgoStr));
+      depensesWhereClause.date_depense = { [Op.gte]: monthAgoStr };
     } else if (dateFrom && dateTo) {
-      whereClause.date_livraison = { [Op.between]: [dateFrom, dateTo] };
+      whereClause[Op.or] = [
+        { date_livraison: { [Op.between]: [dateFrom, dateTo] } },
+        {
+          date_livraison: null,
+          date_commande: { [Op.between]: [dateFrom, dateTo] }
+        }
+      ];
       depensesWhereClause.date_depense = { [Op.between]: [dateFrom, dateTo] };
     }
 

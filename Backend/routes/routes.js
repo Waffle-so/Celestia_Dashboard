@@ -68,17 +68,17 @@ router.get("/commandes-clients", cacheMiddleware("commandes-clients"), CommandeC
 router.get("/commandes-clients/:id", cacheMiddleware("commandes-clients"), CommandeClientController.getCommandeClientById);
 router.post(
    "/commandes-clients",
-   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard", "budget"),
    CommandeClientController.createCommandeClient
 );
 router.put(
    "/commandes-clients/:id",
-   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard", "budget"),
    CommandeClientController.updateCommandeClient
 );
 router.delete(
    "/commandes-clients/:id",
-   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard", "budget"),
    CommandeClientController.deleteCommandeClient
 );
 

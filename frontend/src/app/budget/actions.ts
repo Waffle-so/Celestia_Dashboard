@@ -115,7 +115,7 @@ export const executeTransaction = async (
       const errorData = await response.json().catch(() => ({}))
       return { success: false, error: errorData.message || "Une erreur est survenue côté serveur." }
     }
-    invalidateCache("budget")
+    invalidateCache("budget", "portefeuille", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -130,7 +130,7 @@ export const deleteLog = async (id: number): Promise<{ success: boolean; error?:
     if (!response.ok) {
       return { success: false, error: "Erreur lors de la suppression du log." }
     }
-    invalidateCache("budget")
+    invalidateCache("budget", "portefeuille", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }

@@ -197,7 +197,7 @@ export const saveCommande = async (
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Une erreur est survenue." }
     }
-    invalidateCache("commandes")
+    invalidateCache("commandes", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -239,7 +239,7 @@ export const addLigneCommande = async (
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de l'ajout de la ligne." }
     }
-    invalidateCache("commandes", "articles")
+    invalidateCache("commandes", "articles", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -252,7 +252,7 @@ export const deleteLigneCommande = async (ligneId: number): Promise<{ success: b
     if (!res.ok) {
       return { success: false, error: "Erreur lors de la suppression de la ligne." }
     }
-    invalidateCache("commandes")
+    invalidateCache("commandes", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -272,7 +272,7 @@ export const markCommandeReceived = async (id: number): Promise<{ success: boole
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la mise à jour du statut." }
     }
-    invalidateCache("commandes", "articles", "budget")
+    invalidateCache("commandes", "articles", "budget", "portefeuille", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -286,7 +286,7 @@ export const deleteCommande = async (id: number): Promise<{ success: boolean; er
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la suppression." }
     }
-    invalidateCache("commandes")
+    invalidateCache("commandes", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }

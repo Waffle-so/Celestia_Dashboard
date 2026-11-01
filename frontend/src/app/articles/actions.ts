@@ -228,7 +228,7 @@ export const saveArticle = async (
       return { success: false, error: err.message || "Une erreur est survenue lors de l'enregistrement." }
     }
 
-    invalidateCache("articles", "collections")
+    invalidateCache("articles", "collections", "commandes-clients", "commandes", "dashboard")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Impossible de contacter le serveur." }
@@ -242,7 +242,7 @@ export const deleteArticle = async (id: number): Promise<{ success: boolean; err
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la suppression." }
     }
-    invalidateCache("articles", "collections")
+    invalidateCache("articles", "collections", "commandes-clients", "commandes", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }

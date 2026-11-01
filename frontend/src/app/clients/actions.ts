@@ -81,7 +81,7 @@ export const saveClient = async (
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Une erreur est survenue lors de l'enregistrement." }
     }
-    invalidateCache("clients")
+    invalidateCache("clients", "commandes-clients", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
@@ -95,7 +95,7 @@ export const deleteClient = async (id: number): Promise<{ success: boolean; erro
       const err = await res.json().catch(() => ({}))
       return { success: false, error: err.message || "Erreur lors de la suppression." }
     }
-    invalidateCache("clients")
+    invalidateCache("clients", "commandes-clients", "dashboard")
     return { success: true }
   } catch {
     return { success: false, error: "Impossible de contacter le serveur." }
