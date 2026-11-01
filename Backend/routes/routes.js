@@ -39,9 +39,9 @@ router.post("/commandes", invalidateMiddleware("commandes", "dashboard"), Comman
 router.put("/commandes/:id", invalidateMiddleware("commandes", "dashboard"), CommandeController.updateCommande);
 router.delete("/commandes/:id", invalidateMiddleware("commandes", "dashboard"), CommandeController.deleteCommande);
 router.put(
-  "/commandes/:id/arrivee",
-  invalidateMiddleware("commandes", "articles", "portefeuille", "dashboard"),
-  CommandeController.marquerCommandeArrivee
+   "/commandes/:id/arrivee",
+   invalidateMiddleware("commandes", "articles", "portefeuille", "dashboard"),
+   CommandeController.marquerCommandeArrivee
 );
 
 /* =====================================================
@@ -57,7 +57,7 @@ router.delete("/commandes-lignes/:id", invalidateMiddleware("commandes", "dashbo
    ===================================================== */
 router.get("/clients", cacheMiddleware("clients"), ClientController.getAllClients);
 router.get("/clients/:id", cacheMiddleware("clients"), ClientController.getClientById);
-router.post("/clients", invalidateMiddleware("clients"), ClientController.createClient);
+router.post("/clients", invalidateMiddleware("clients", "commandes-clients"), ClientController.createClient);
 router.put("/clients/:id", invalidateMiddleware("clients", "commandes-clients"), ClientController.updateClient);
 router.delete("/clients/:id", invalidateMiddleware("clients", "commandes-clients"), ClientController.deleteClient);
 
@@ -67,19 +67,19 @@ router.delete("/clients/:id", invalidateMiddleware("clients", "commandes-clients
 router.get("/commandes-clients", cacheMiddleware("commandes-clients"), CommandeClientController.getAllCommandesClients);
 router.get("/commandes-clients/:id", cacheMiddleware("commandes-clients"), CommandeClientController.getCommandeClientById);
 router.post(
-  "/commandes-clients",
-  invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
-  CommandeClientController.createCommandeClient
+   "/commandes-clients",
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   CommandeClientController.createCommandeClient
 );
 router.put(
-  "/commandes-clients/:id",
-  invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
-  CommandeClientController.updateCommandeClient
+   "/commandes-clients/:id",
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   CommandeClientController.updateCommandeClient
 );
 router.delete(
-  "/commandes-clients/:id",
-  invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
-  CommandeClientController.deleteCommandeClient
+   "/commandes-clients/:id",
+   invalidateMiddleware("commandes-clients", "articles", "portefeuille", "dashboard"),
+   CommandeClientController.deleteCommandeClient
 );
 
 /* =====================================================
