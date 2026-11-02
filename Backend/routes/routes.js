@@ -87,6 +87,8 @@ router.delete(
    ===================================================== */
 router.get("/collections", cacheMiddleware("collections"), CollectionController.getAllCollections);
 router.get("/collections/:id", cacheMiddleware("collections"), CollectionController.getCollectionById);
+router.post("/collections/upload-image", CollectionController.uploadImage);
+router.post("/collections/delete-storage-image", CollectionController.deleteStorageImage);
 router.post("/collections", invalidateMiddleware("collections", "articles"), CollectionController.createCollection);
 router.put("/collections/:id", invalidateMiddleware("collections", "articles"), CollectionController.updateCollection);
 router.delete("/collections/:id", invalidateMiddleware("collections", "articles"), CollectionController.deleteCollection);

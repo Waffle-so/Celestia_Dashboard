@@ -320,6 +320,57 @@ export const createCollection = async (
   }
 }
 
+export const updateCollection = async (
+  id: number,
+  data: Partial<Collection>
+): Promise<{ success: boolean; collection?: Collection; error?: string }> => {
+  try {
+    const res = await fetch(`${API_BASE}/collections/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return { success: false, error: err.message || "Erreur lors de la modification de la collection." }
+    }
+    const updated = await res.json()
+    invalidateCache("collections", "articles")
+    return { success: true, collection: updated }
+  } catch (error: any) {
+    return { success: false, error: error.message || "Impossible de contacter le serveur." }
+  }
+}
+
+export const uploadCollectionImage = async (base64: string, fileName?: string): Promise<string> => {
+  const res = await fetch(`${API_BASE}/collections/upload-image`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file: base64, fileName }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || "Échec de l'upload de l'image de la collection vers Supabase Storage.")
+  }
+  const data = await res.json()
+  return data.url
+}
+
+export const deleteCollectionStorageImage = async (url: string): Promise<boolean> => {
+  try {
+    if (!url || !url.includes("supabase.co")) return true
+    const res = await fetch(`${API_BASE}/collections/delete-storage-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    })
+    return res.ok
+  } catch (err) {
+    console.warn("Échec de la suppression de l'image sur Supabase Storage:", err)
+    return false
+  }
+}
+
 export const deleteCollection = async (id: number): Promise<{ success: boolean; error?: string }> => {
   try {
     const res = await fetch(`${API_BASE}/collections/${id}`, { method: "DELETE" })

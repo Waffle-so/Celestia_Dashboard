@@ -1,5 +1,5 @@
 const { Collection, Article } = require("../Model");
-const { deleteImageFromStorage } = require("../utils/supabase");
+const { deleteImageFromStorage, uploadImageToStorage } = require("../utils/supabase");
 
 // GET /api/collections
 const getAllCollections = async (req, res) => {
@@ -125,10 +125,50 @@ const deleteCollection = async (req, res) => {
   }
 };
 
+// POST /api/collections/upload-image — upload une image vers Supabase Storage dans le dossier collections
+const uploadImage = async (req, res) => {
+  try {
+    const { file, fileName } = req.body;
+    if (!file) {
+      return res.status(400).json({ message: "Fichier d'image manquant (base64 requis)." });
+    }
+
+    const result = await uploadImageToStorage(file, fileName, "collections");
+    if (result.error) {
+      return res.status(500).json({ message: "Erreur Supabase Storage", error: result.error });
+    }
+
+    res.json({ url: result.publicUrl, filePath: result.filePath });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de l'upload", error: error.message });
+  }
+};
+
+// POST /api/collections/delete-storage-image — supprime directement un fichier de Supabase Storage
+const deleteStorageImage = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ message: "URL de l'image requise." });
+    }
+
+    const result = await deleteImageFromStorage(url);
+    if (result.error) {
+      return res.status(500).json({ message: "Erreur Supabase Storage", error: result.error });
+    }
+
+    res.json({ message: "Image supprimée de Supabase Storage avec succès.", result });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
+  }
+};
+
 module.exports = {
   getAllCollections,
   getCollectionById,
   createCollection,
   updateCollection,
   deleteCollection,
+  uploadImage,
+  deleteStorageImage,
 };

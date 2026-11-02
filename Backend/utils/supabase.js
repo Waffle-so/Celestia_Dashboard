@@ -35,22 +35,24 @@ const deleteImageFromStorage = async (publicUrl) => {
     }
 
     // Si ce n'est pas une URL Supabase (ex: /uploads/... ou image locale), on ignore sans erreur
-    if (!publicUrl.includes("supabase.co") || !publicUrl.includes(`/storage/v1/object/public/${BUCKET}`)) {
+    if (!publicUrl.includes("supabase.co") || !publicUrl.includes("/storage/v1/object/public/")) {
       return { skipped: true, reason: "Non stocké sur Supabase Storage" };
     }
 
     const url = new URL(publicUrl);
-    const marker = `/storage/v1/object/public/${BUCKET}/`;
+    const marker = `/storage/v1/object/public/`;
     const markerIndex = url.pathname.indexOf(marker);
     if (markerIndex === -1) {
       return { error: "Format d'URL Supabase Storage invalide." };
     }
 
-    let filePath = url.pathname.substring(markerIndex + marker.length);
-    filePath = decodeURIComponent(filePath).replace(/^\/+/, "");
+    const afterMarker = url.pathname.substring(markerIndex + marker.length);
+    const parts = decodeURIComponent(afterMarker).replace(/^\/+/, "").split("/");
+    const bucketName = parts[0] || BUCKET;
+    const filePath = parts.slice(1).join("/");
 
-    console.log(`[Supabase Storage] 🗑️ Suppression du fichier: bucket="${BUCKET}", path="${filePath}"`);
-    const { data, error } = await supabase.storage.from(BUCKET).remove([filePath]);
+    console.log(`[Supabase Storage] 🗑️ Suppression du fichier: bucket="${bucketName}", path="${filePath}"`);
+    const { data, error } = await supabase.storage.from(bucketName).remove([filePath]);
     if (error) {
       console.error(`[Supabase Storage] ❌ Erreur lors de la suppression de "${filePath}":`, error.message);
       return { error: error.message };
@@ -100,9 +102,10 @@ const ensureBucketExists = async () => {
  * Upload une image encodée en base64 vers Supabase Storage et retourne l'URL publique.
  * @param {string} base64Data - Chaîne base64 (avec ou sans prefixe data:image/...)
  * @param {string} [originalName] - Nom du fichier original pour conserver l'extension
+ * @param {string} [folder] - Dossier cible dans le bucket (ex: "articles" ou "collections")
  * @returns {Promise<{ publicUrl?: string, error?: string }>}
  */
-const uploadImageToStorage = async (base64Data, originalName = "image.jpg") => {
+const uploadImageToStorage = async (base64Data, originalName = "image.jpg", folder = "articles") => {
   try {
     if (!supabase) {
       return { error: "Supabase Storage non initialisé. Ajoutez SUPABASE_URL et SUPABASE_SECRET_KEY dans les variables d'environnement." };
@@ -130,7 +133,8 @@ const uploadImageToStorage = async (base64Data, originalName = "image.jpg") => {
 
     const buffer = Buffer.from(pureBase64, "base64");
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const filePath = `articles/${uniqueSuffix}.${ext}`;
+    const sanitizedFolder = folder ? folder.replace(/^\/+|\/+$/g, "") : "articles";
+    const filePath = `${sanitizedFolder}/${uniqueSuffix}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
