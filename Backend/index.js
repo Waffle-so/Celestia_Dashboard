@@ -23,6 +23,8 @@ app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
 // ── Routes de santé / Healthcheck (Render / Ping) ───────────────────────────
 app.get("/health", (req, res) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[HEALTHCHECK] Ping reçu à ${timestamp} depuis ${req.ip || req.headers["x-forwarded-for"] || "inconnu"}`);
   res.status(200).send("ok");
 });
 
