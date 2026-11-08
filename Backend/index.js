@@ -21,7 +21,11 @@ app.use(express.json({ limit: "25mb" }));
 app.use(bodyParser.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
-// ── Route de santé ───────────────────────────────────────────────────────────
+// ── Routes de santé / Healthcheck (Render / Ping) ───────────────────────────
+app.get("/health", (req, res) => {
+  res.status(200).send("ok");
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "✅ Celestia Command Backend actif !", version: "1.0.0" });
 });
